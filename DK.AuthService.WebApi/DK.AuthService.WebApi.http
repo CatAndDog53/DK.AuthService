@@ -1,0 +1,6 @@
+@DK.AuthService.WebApi_HostAddress = http://localhost:5212
+
+GET {{DK.AuthService.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
