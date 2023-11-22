@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DK.AuthService.WebApi", "DK.AuthService.WebApi\DK.AuthService.WebApi.csproj", "{D921A03B-D647-4944-A6A7-AAA19CF2847C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DK.AuthService.WebApi", "DK.AuthService.WebApi\DK.AuthService.WebApi.csproj", "{D921A03B-D647-4944-A6A7-AAA19CF2847C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DK.AuthService.Model", "DK.AuthService.Model\DK.AuthService.Model.csproj", "{A439AD45-28DF-4CFE-A36B-6D5491E77806}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DK.AuthService.Infrastructure", "DK.AuthService.Infrastructure\DK.AuthService.Infrastructure.csproj", "{B26D87DF-13BD-4DF1-89DD-EDE0A23EEEA0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DK.AuthService.Services", "DK.AuthService.Services\DK.AuthService.Services.csproj", "{1D8AEFB1-72F2-4997-AEA4-0B941EF2B1BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +21,18 @@ Global
 		{D921A03B-D647-4944-A6A7-AAA19CF2847C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D921A03B-D647-4944-A6A7-AAA19CF2847C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D921A03B-D647-4944-A6A7-AAA19CF2847C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A439AD45-28DF-4CFE-A36B-6D5491E77806}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A439AD45-28DF-4CFE-A36B-6D5491E77806}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A439AD45-28DF-4CFE-A36B-6D5491E77806}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A439AD45-28DF-4CFE-A36B-6D5491E77806}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B26D87DF-13BD-4DF1-89DD-EDE0A23EEEA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B26D87DF-13BD-4DF1-89DD-EDE0A23EEEA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B26D87DF-13BD-4DF1-89DD-EDE0A23EEEA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B26D87DF-13BD-4DF1-89DD-EDE0A23EEEA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D8AEFB1-72F2-4997-AEA4-0B941EF2B1BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D8AEFB1-72F2-4997-AEA4-0B941EF2B1BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D8AEFB1-72F2-4997-AEA4-0B941EF2B1BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D8AEFB1-72F2-4997-AEA4-0B941EF2B1BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
