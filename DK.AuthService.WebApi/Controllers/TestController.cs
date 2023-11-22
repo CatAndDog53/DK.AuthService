@@ -9,11 +9,17 @@ namespace DK.AuthService.WebApi.Controllers
     public class TestController : ControllerBase
     {
         private static readonly string DataToAccess = "Data accessed successfully";
+        private readonly IHttpContextAccessor _contextAccessor;
+        public TestController(IHttpContextAccessor contextAccessor)
+        {
+            _contextAccessor = contextAccessor;
+        }
 
         [HttpGet]
         [Route("GetData")]
         public IActionResult Get()
         {
+            var user = _contextAccessor.HttpContext?.User;
             return Ok(DataToAccess);
         }
 
@@ -22,6 +28,7 @@ namespace DK.AuthService.WebApi.Controllers
         [Authorize(Roles = PredefinedUserRoles.USER)]
         public IActionResult GetUserRole()
         {
+            var user = _contextAccessor.HttpContext?.User;
             return Ok(DataToAccess);
         }
 

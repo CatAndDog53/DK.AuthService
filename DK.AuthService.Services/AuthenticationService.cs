@@ -23,20 +23,17 @@ namespace DK.AuthService.Services
             _configuration = configuration;
         }
 
-        public void Dispose()
-        {
-            
-        }
+        public void Dispose() { }
 
         public async Task<AuthServiceResponseDto> LoginAsync(LoginCredsDto loginDto)
         {
-            var user = await _userManager.FindByNameAsync(loginDto.UserName);
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
             if (user is null)
                 return new AuthServiceResponseDto()
                 {
                     IsSucceed = false,
-                    Message = "Invalid Credentials"
+                    Message = $"User with email {loginDto.Email} doesnt exist!"
                 };
 
             var isPasswordCorrect = await _userManager.CheckPasswordAsync(user, loginDto.Password);
@@ -45,7 +42,7 @@ namespace DK.AuthService.Services
                 return new AuthServiceResponseDto()
                 {
                     IsSucceed = false,
-                    Message = "Invalid Credentials"
+                    Message = "Password is incorrect!"
                 };
 
             var userRoles = await _userManager.GetRolesAsync(user);
@@ -75,13 +72,13 @@ namespace DK.AuthService.Services
 
         public async Task<AuthServiceResponseDto> MakeAdminAsync(UpdatePermissionDto updatePermissionDto)
         {
-            var user = await _userManager.FindByNameAsync(updatePermissionDto.UserName);
+            var user = await _userManager.FindByEmailAsync(updatePermissionDto.Email);
 
             if (user is null)
                 return new AuthServiceResponseDto()
                 {
                     IsSucceed = false,
-                    Message = "Invalid User name!!!!!!!!"
+                    Message = "Invalid Email!"
                 };
 
             await _userManager.AddToRoleAsync(user, PredefinedUserRoles.ADMIN);
@@ -89,19 +86,19 @@ namespace DK.AuthService.Services
             return new AuthServiceResponseDto()
             {
                 IsSucceed = true,
-                Message = "User is now an ADMIN"
+                Message = $"User with email {user.Email} is now an ADMIN"
             };
         }
 
         public async Task<AuthServiceResponseDto> RegisterAsync(RegisterDataDto registerDto)
         {
-            var isExistsUser = await _userManager.FindByNameAsync(registerDto.UserName);
+            var user = await _userManager.FindByEmailAsync(registerDto.Email);
 
-            if (isExistsUser != null)
+            if (user != null)
                 return new AuthServiceResponseDto()
                 {
                     IsSucceed = false,
-                    Message = "UserName Already Exists"
+                    Message = $"User with email {user.Email} already exists!"
                 };
             
 
@@ -118,7 +115,7 @@ namespace DK.AuthService.Services
 
             if (!createUserResult.Succeeded)
             {
-                var errorString = "User Creation Failed Beacause: ";
+                var errorString = "User creation failed beacause: ";
                 foreach (var error in createUserResult.Errors)
                 {
                     errorString += " # " + error.Description;
@@ -130,35 +127,12 @@ namespace DK.AuthService.Services
                 };
             }
 
-            // Add a Default USER Role to all users
             await _userManager.AddToRoleAsync(newUser, PredefinedUserRoles.USER);
 
             return new AuthServiceResponseDto()
             {
                 IsSucceed = true,
-                Message = "User Created Successfully"
-            };
-        }
-
-        public async Task<AuthServiceResponseDto> SeedDefaultRolesAsync()
-        {
-            bool isAdminRoleExists = await _roleManager.RoleExistsAsync(PredefinedUserRoles.ADMIN);
-            bool isUserRoleExists = await _roleManager.RoleExistsAsync(PredefinedUserRoles.USER);
-
-            if (isAdminRoleExists && isUserRoleExists)
-                return new AuthServiceResponseDto()
-                {
-                    IsSucceed = true,
-                    Message = "Roles Seeding is Already Done"
-                };
-
-            await _roleManager.CreateAsync(new IdentityRole(PredefinedUserRoles.USER));
-            await _roleManager.CreateAsync(new IdentityRole(PredefinedUserRoles.ADMIN));
-
-            return new AuthServiceResponseDto()
-            {
-                IsSucceed = true,
-                Message = "Role Seeding Done Successfully"
+                Message = "User created successfully!"
             };
         }
 

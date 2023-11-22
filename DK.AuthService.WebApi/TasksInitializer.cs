@@ -34,7 +34,7 @@ namespace DK.AuthService.WebApi
                         Guid guid = Guid.NewGuid();
                         applicationUser.Id = guid.ToString();
                         applicationUser.UserName = "Admin";
-                        applicationUser.Email = "admin@mail.co";
+                        applicationUser.Email = "admin@mail.com";
                         applicationUser.NormalizedUserName = applicationUser.UserName.ToUpper();
                         applicationUser.NormalizedEmail = applicationUser.Email.ToLower();
                         applicationUser.FirstName = "fname";

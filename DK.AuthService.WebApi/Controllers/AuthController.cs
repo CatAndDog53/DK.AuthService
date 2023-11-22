@@ -11,10 +11,12 @@ namespace DK.AuthService.WebApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthenticationService _authService;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public AuthController(IAuthenticationService authService)
+        public AuthController(IAuthenticationService authService, IHttpContextAccessor contextAccessor)
         {
             _authService = authService;
+            _contextAccessor = contextAccessor;
         }
 
 
