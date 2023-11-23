@@ -57,7 +57,7 @@ namespace DK.AuthService.WebApi.Controllers
         [HttpPost]
         [Route("updateUserInfo")]
         [Authorize(Roles = PredefinedUserRoles.USER)]
-        public async Task<IActionResult> UpdateUserInfo([FromBody] UpdateUserInfoDto updateUserInfoDto)
+        public async Task<IActionResult> UpdateCurrentUserInfo([FromBody] UpdateUserInfoDto updateUserInfoDto)
         {
             var updateResult = await _userService.UpdateUserInfoAsync(User.Identity?.Name, updateUserInfoDto);
 
@@ -70,7 +70,7 @@ namespace DK.AuthService.WebApi.Controllers
         [HttpPost]
         [Route("changeUserPassword")]
         [Authorize(Roles = PredefinedUserRoles.USER)]
-        public async Task<IActionResult> ChangeUserPassword([FromBody] ChangeUserPasswordDto changeUserPasswordDto)
+        public async Task<IActionResult> ChangeCurrentUserPassword([FromBody] ChangeUserPasswordDto changeUserPasswordDto)
         {
             var passwordChangeResult = await _userService.ChangeUserPassword(User.Identity?.Name, changeUserPasswordDto);
 
