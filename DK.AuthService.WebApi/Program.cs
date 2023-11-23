@@ -17,10 +17,9 @@ namespace DK.AuthService.WebApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
-
             builder.Services.AddControllers();
-
             builder.Services.AddEndpointsApiExplorer();
+
             builder.Services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
@@ -53,19 +52,16 @@ namespace DK.AuthService.WebApi
                     });
                 });
 
-
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
                 var connectionString = builder.Configuration.GetConnectionString("DevConnection");
                 options.UseSqlServer(connectionString);
             });
 
-
             builder.Services
                 .AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
-
 
             builder.Services.Configure<IdentityOptions>(options =>
             {
@@ -76,7 +72,6 @@ namespace DK.AuthService.WebApi
                 options.Password.RequireNonAlphanumeric = false;
                 options.SignIn.RequireConfirmedEmail = false;
             });
-
 
             builder.Services
                 .AddAuthentication(options =>
@@ -99,26 +94,10 @@ namespace DK.AuthService.WebApi
                     };
                 });
 
-            //builder.Services.AddAuthorization(options =>
-            //{
-            //    options.AddPolicy("userAddress", policy =>
-            //    {
-            //        policy.RequireAssertion(context =>
-            //        {
-            //            var userAddress = context.User.FindFirst(JWTClaim.Email).Value;
-            //            // /api/v1/mailbox/email@example.com/inbox/messages/list
-            //            var address = new HttpContextAccessor().HttpContext.Request.RouteValues["address"].ToString();
-            //            return address == userAddress;
-            //        });
-            //    });
-            //});
-
-
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-
+            builder.Services.AddScoped<IUserService, UserService>();
 
             var app = builder.Build();
-
 
             if (app.Environment.IsDevelopment())
             {
@@ -132,10 +111,8 @@ namespace DK.AuthService.WebApi
             app.MapControllers();
 
             app.SeedDefaultRolesAndUsers();
+
             app.Run();
-
-
-
         }
     }
 }

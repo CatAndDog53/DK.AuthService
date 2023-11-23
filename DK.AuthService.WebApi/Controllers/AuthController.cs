@@ -11,31 +11,15 @@ namespace DK.AuthService.WebApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthenticationService _authService;
-        private readonly IHttpContextAccessor _contextAccessor;
 
-        public AuthController(IAuthenticationService authService, IHttpContextAccessor contextAccessor)
+        public AuthController(IAuthenticationService authService)
         {
             _authService = authService;
-            _contextAccessor = contextAccessor;
         }
-
-
-        [HttpPost]
-        [Route("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDataDto registerDto)
-        {
-            var registerResult = await _authService.RegisterAsync(registerDto);
-
-            if (registerResult.IsSucceed)
-                return Ok(registerResult);
-
-            return BadRequest(registerResult);
-        }
-
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> Login([FromBody] LoginCredsDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             var loginResult = await _authService.LoginAsync(loginDto);
 
@@ -44,20 +28,19 @@ namespace DK.AuthService.WebApi.Controllers
 
             return Unauthorized(loginResult);
         }
-
-
-
+        
         [HttpPost]
-        [Route("make-admin")]
-        [Authorize(Roles = PredefinedUserRoles.ADMIN)]
-        public async Task<IActionResult> MakeAdmin([FromBody] UpdatePermissionDto updatePermissionDto)
+        [Route("externalLogin")]
+        [Authorize(Roles = PredefinedUserRoles.USER)]
+        public async Task<IActionResult> ExternalLogin()
         {
-            var operationResult = await _authService.MakeAdminAsync(updatePermissionDto);
+            var externalToken = await _authService.GetExternalTokenAsync(User.Identity?.Name);
 
-            if (operationResult.IsSucceed)
-                return Ok(operationResult);
+            if (externalToken.IsSucceed)
+                return Ok(externalToken);
 
-            return BadRequest(operationResult);
+            return Unauthorized(externalToken);
         }
+
     }
 }

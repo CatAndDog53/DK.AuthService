@@ -15,22 +15,25 @@ namespace DK.AuthService.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
+        private readonly IUserService _userService;
 
-        public AuthenticationService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+        public AuthenticationService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, 
+            IConfiguration configuration, IUserService userService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _configuration = configuration;
+            _userService = userService;
         }
 
         public void Dispose() { }
 
-        public async Task<AuthServiceResponseDto> LoginAsync(LoginCredsDto loginDto)
+        public async Task<ServiceResponseDto> LoginAsync(LoginDto loginDto)
         {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
             if (user is null)
-                return new AuthServiceResponseDto()
+                return new ServiceResponseDto()
                 {
                     IsSucceed = false,
                     Message = $"User with email {loginDto.Email} doesnt exist!"
@@ -39,7 +42,7 @@ namespace DK.AuthService.Services
             var isPasswordCorrect = await _userManager.CheckPasswordAsync(user, loginDto.Password);
 
             if (!isPasswordCorrect)
-                return new AuthServiceResponseDto()
+                return new ServiceResponseDto()
                 {
                     IsSucceed = false,
                     Message = "Password is incorrect!"
@@ -63,78 +66,50 @@ namespace DK.AuthService.Services
 
             var token = GenerateNewJsonWebToken(authClaims);
 
-            return new AuthServiceResponseDto()
+            return new ServiceResponseDto()
             {
                 IsSucceed = true,
                 Message = token
             };
         }
 
-        public async Task<AuthServiceResponseDto> MakeAdminAsync(UpdatePermissionDto updatePermissionDto)
+        public async Task<ServiceResponseDto> GetExternalTokenAsync(string? userName)
         {
-            var user = await _userManager.FindByEmailAsync(updatePermissionDto.Email);
-
-            if (user is null)
-                return new AuthServiceResponseDto()
+            if (!await _userService.IsCurrentUserNameValid(userName))
+            {
+                return new ServiceResponseDto()
                 {
                     IsSucceed = false,
-                    Message = "Invalid Email!"
-                };
-
-            await _userManager.AddToRoleAsync(user, PredefinedUserRoles.ADMIN);
-
-            return new AuthServiceResponseDto()
-            {
-                IsSucceed = true,
-                Message = $"User with email {user.Email} is now an ADMIN"
-            };
-        }
-
-        public async Task<AuthServiceResponseDto> RegisterAsync(RegisterDataDto registerDto)
-        {
-            var user = await _userManager.FindByEmailAsync(registerDto.Email);
-
-            if (user != null)
-                return new AuthServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = $"User with email {user.Email} already exists!"
-                };
-            
-
-            ApplicationUser newUser = new ApplicationUser()
-            {
-                FirstName = registerDto.FirstName,
-                LastName = registerDto.LastName,
-                Email = registerDto.Email,
-                UserName = registerDto.UserName,
-                SecurityStamp = Guid.NewGuid().ToString(),
-            };
-
-            var createUserResult = await _userManager.CreateAsync(newUser, registerDto.Password);
-
-            if (!createUserResult.Succeeded)
-            {
-                var errorString = "User creation failed beacause: ";
-                foreach (var error in createUserResult.Errors)
-                {
-                    errorString += " # " + error.Description;
-                }
-                return new AuthServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = errorString
+                    Message = "Access denied"
                 };
             }
 
-            await _userManager.AddToRoleAsync(newUser, PredefinedUserRoles.USER);
+            var user = await _userManager.FindByNameAsync(userName);
+            var userRoles = await _userManager.GetRolesAsync(user);
 
-            return new AuthServiceResponseDto()
+            var authClaims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim("JWTID", Guid.NewGuid().ToString()),
+                new Claim("FirstName", user.FirstName),
+                new Claim("LastName", user.LastName),
+            };
+
+            foreach (var userRole in userRoles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
+
+            var token = GenerateNewJsonWebToken(authClaims);
+
+            return new ServiceResponseDto()
             {
                 IsSucceed = true,
-                Message = "User created successfully!"
+                Message = token
             };
         }
+
 
         private string GenerateNewJsonWebToken(List<Claim> claims)
         {
