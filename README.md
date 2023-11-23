@@ -3,7 +3,7 @@
 ## Status
 - Email authorization - READY TO USE
 - Google authorization - WORK IN PROGRESS
-- Aplle authorization - WORK IN PROGRESS
+- Apple authorization - WORK IN PROGRESS
 
 ## Setup
 The application uses **SQL Server** as a database.
@@ -11,7 +11,7 @@ The application uses **SQL Server** as a database.
 - Then just launch the app and use Swagger (or some other tool) to interact with it. The database will be created automatically when you run the app the first time.
 
 ## Usage
-Defaul Admin credentials are:
+Default Admin credentials are:
 - *admin@mail.com*
 - *password*
 
@@ -22,7 +22,7 @@ Change them after the first launch.
 - Then in Swagger click "Authorize" button and paste token in format:
 
     
-        bearer [your token];
+        bearer [your token]
     
 
 ## Api Endpoints
