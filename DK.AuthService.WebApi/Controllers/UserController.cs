@@ -3,7 +3,6 @@ using DK.AuthService.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DK.AuthService.Services.Interfaces;
-using System.Text.Json;
 
 namespace DK.AuthService.WebApi.Controllers
 {

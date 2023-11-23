@@ -2,7 +2,6 @@
 using DK.AuthService.Model.Dtos;
 using DK.AuthService.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
-using System.Data.Entity;
 
 namespace DK.AuthService.Services
 {
