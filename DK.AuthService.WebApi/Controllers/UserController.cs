@@ -27,7 +27,6 @@ namespace DK.AuthService.WebApi.Controllers
             var userInfo = await _userService.GetCurrentUserInfo(User.Identity?.Name);
 
             return Ok(userInfo);
-
         }
 
         [HttpGet]
@@ -38,7 +37,6 @@ namespace DK.AuthService.WebApi.Controllers
             var userInfo = await _userService.GetAllUsersInfo();
 
             return Ok(userInfo);
-
         }
 
         [HttpPost]

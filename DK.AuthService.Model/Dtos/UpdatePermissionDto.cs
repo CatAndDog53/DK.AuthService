@@ -6,6 +6,5 @@ namespace DK.AuthService.Model.Dtos
     {
         [Required(ErrorMessage = "Email is required")]
         public string Email { get; set; } 
-      
     }
 }
