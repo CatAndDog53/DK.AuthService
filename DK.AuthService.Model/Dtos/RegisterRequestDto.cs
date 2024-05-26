@@ -2,7 +2,7 @@
 
 namespace DK.AuthService.Model.Dtos
 {
-    public class RegisterDataDto
+    public class RegisterRequestDto
     {
         [Required(ErrorMessage = "First Name is required")]
         public string FirstName { get; set; }

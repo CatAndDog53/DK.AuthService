@@ -20,7 +20,7 @@ namespace DK.AuthService.WebApi.Controllers
         }
 
         [HttpGet]
-        [Route("GetCurrentUserInfo")]
+        [Route("getCurrentUserInfo")]
         [Authorize(Roles = PredefinedUserRoles.USER)]
         public async Task<IActionResult> GetCurrentUserInfo()
         {
@@ -30,7 +30,7 @@ namespace DK.AuthService.WebApi.Controllers
         }
 
         [HttpGet]
-        [Route("GetAllUsersInfo")]
+        [Route("getAllUsersInfo")]
         [Authorize(Roles = PredefinedUserRoles.ADMIN)]
         public async Task<IActionResult> GetAllUsersInfo()
         {
@@ -41,7 +41,7 @@ namespace DK.AuthService.WebApi.Controllers
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDataDto registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterRequestDto registerDto)
         {
             var registerResult = await _userService.RegisterAsync(registerDto);
 
@@ -78,11 +78,11 @@ namespace DK.AuthService.WebApi.Controllers
         }
 
         [HttpPost]
-        [Route("addAdminRoleToUser")]
+        [Route("updateUserRole")]
         [Authorize(Roles = PredefinedUserRoles.ADMIN)]
-        public async Task<IActionResult> AddAdminRoleToUser([FromBody] UpdatePermissionDto updatePermissionDto)
+        public async Task<IActionResult> UpdateUserRole([FromBody] UpdateRoleRequestDto updatePermissionDto)
         {
-            var operationResult = await _userService.AddAdminRoleToUserAsync(updatePermissionDto);
+            var operationResult = await _userService.UpdateRole(updatePermissionDto);
 
             if (operationResult.IsSucceed)
                 return Ok(operationResult);

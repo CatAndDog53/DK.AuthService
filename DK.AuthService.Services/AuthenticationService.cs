@@ -28,7 +28,7 @@ namespace DK.AuthService.Services
 
         public void Dispose() { }
 
-        public async Task<ServiceResponseDto> LoginAsync(LoginDto loginDto)
+        public async Task<ServiceResponseDto> LoginAsync(LoginRequestDto loginDto)
         {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
 

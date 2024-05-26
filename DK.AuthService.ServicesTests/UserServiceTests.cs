@@ -113,7 +113,7 @@ namespace DK.AuthService.ServicesTests
         public async Task RegisterAsync_ValidData_CallsCreateAsyncAndAddToRoleAsync()
         {
             // Arrange
-            var registerDto = new RegisterDataDto
+            var registerDto = new RegisterRequestDto
             {
                 FirstName = "Test",
                 LastName = "User",
@@ -145,7 +145,7 @@ namespace DK.AuthService.ServicesTests
         public async Task RegisterAsync_WithInvalidUsername_DoesNotCallCreateAsync()
         {
             // Arrange
-            var registerDto = new RegisterDataDto
+            var registerDto = new RegisterRequestDto
             {
                 UserName = "existingUser",
                 FirstName = "Test",
@@ -178,7 +178,7 @@ namespace DK.AuthService.ServicesTests
         public async Task RegisterAsync_InvalidEmail_DoesNotCallCreateAsync()
         {
             // Arrange
-            var registerDto = new RegisterDataDto
+            var registerDto = new RegisterRequestDto
             {
                 UserName = "testuser",
                 FirstName = "Test",

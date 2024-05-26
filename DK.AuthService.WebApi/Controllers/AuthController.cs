@@ -19,7 +19,7 @@ namespace DK.AuthService.WebApi.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginRequestDto loginDto)
         {
             var loginResult = await _authService.LoginAsync(loginDto);
 

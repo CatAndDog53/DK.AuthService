@@ -44,7 +44,7 @@ namespace DK.AuthService.Services
             }).ToList();
         }
 
-        public async Task<ServiceResponseDto> RegisterAsync(RegisterDataDto registerDto)
+        public async Task<ServiceResponseDto> RegisterAsync(RegisterRequestDto registerDto)
         {
             var userByEmail = await _userManager.FindByEmailAsync(registerDto.Email);
             var userByName = await _userManager.FindByNameAsync(registerDto.UserName);
@@ -98,9 +98,9 @@ namespace DK.AuthService.Services
             };
         }
 
-        public async Task<ServiceResponseDto> AddAdminRoleToUserAsync(UpdatePermissionDto updatePermissionDto)
+        public async Task<ServiceResponseDto> UpdateRole(UpdateRoleRequestDto updateRoleRequestDto)
         {
-            var user = await _userManager.FindByEmailAsync(updatePermissionDto.Email);
+            var user = await _userManager.FindByEmailAsync(updateRoleRequestDto.Email);
 
             if (user is null)
                 return new ServiceResponseDto()
@@ -109,13 +109,42 @@ namespace DK.AuthService.Services
                     Message = "Invalid Email!"
                 };
 
-            await _userManager.AddToRoleAsync(user, PredefinedUserRoles.ADMIN);
-
-            return new ServiceResponseDto()
+            if (!await _roleManager.RoleExistsAsync(updateRoleRequestDto.RequestedRole))
             {
-                IsSucceed = true,
-                Message = $"User with email {user.Email} is now an ADMIN"
-            };
+                return new ServiceResponseDto()
+                {
+                    IsSucceed = false,
+                    Message = $"Requested Role doesn't exist!"
+                };
+            }
+
+            if (await _userManager.IsInRoleAsync(user, updateRoleRequestDto.RequestedRole))
+            {
+                return new ServiceResponseDto()
+                {
+                    IsSucceed = false,
+                    Message = $"User already has requested role!"
+                };
+            }          
+
+            var result = await _userManager.AddToRoleAsync(user, updateRoleRequestDto.RequestedRole);
+                        
+            if (result.Succeeded)
+            {
+                return new ServiceResponseDto()
+                {
+                    IsSucceed = true,
+                    Message = $"Role {updateRoleRequestDto.RequestedRole} was assigned to user with email {updateRoleRequestDto.Email}"
+                };
+            }
+            else
+            {
+                return new ServiceResponseDto()
+                {
+                    IsSucceed = false,
+                    Message = "Unspecified error occured!"
+                };
+            }
         }
 
         public async Task<ServiceResponseDto> UpdateUserInfoAsync(string? currentUserName, UpdateUserInfoDto updatedUserInfo)
