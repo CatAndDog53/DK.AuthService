@@ -50,7 +50,7 @@ namespace DK.AuthService.ServicesTests
             var result = await _userService.GetCurrentUserInfo(currentUserName);
 
             // Assert
-            Assert.IsNotNull(result);
+            Assert.That(result, Is.Not.Null);
             Assert.That(result.UserName, Is.EqualTo(expectedUserInfo.UserName));
             Assert.That(result.FirstName, Is.EqualTo(expectedUserInfo.FirstName));
             Assert.That(result.LastName, Is.EqualTo(expectedUserInfo.LastName));
@@ -95,14 +95,14 @@ namespace DK.AuthService.ServicesTests
             var result = await _userService.GetAllUsersInfo();
 
             // Assert
-            Assert.IsNotNull(result);
+            Assert.That(result, Is.Not.Null);
             Assert.That(result.Count(), Is.EqualTo(expectedUsersInfo.Count()));
 
             foreach (var expectedUserInfo in expectedUsersInfo)
             {
                 var actualUserInfo = result.FirstOrDefault(u => u.UserName == expectedUserInfo.UserName);
 
-                Assert.IsNotNull(actualUserInfo);
+                Assert.That(actualUserInfo, Is.Not.Null);
                 Assert.That(actualUserInfo.FirstName, Is.EqualTo(expectedUserInfo.FirstName));
                 Assert.That(actualUserInfo.LastName, Is.EqualTo(expectedUserInfo.LastName));
                 Assert.That(actualUserInfo.Email, Is.EqualTo(expectedUserInfo.Email));
@@ -133,7 +133,7 @@ namespace DK.AuthService.ServicesTests
             var response = await _userService.RegisterAsync(registerDto);
 
             // Assert
-            Assert.IsTrue(response.IsSucceed);
+            Assert.That(response.IsSucceed, Is.True);
             Assert.That(response.Message, Is.EqualTo("User created successfully!"));
             _mockUserManager.Verify(
                 u => u.CreateAsync(It.IsAny<ApplicationUser>(), registerDto.Password), Times.Once);
@@ -167,7 +167,7 @@ namespace DK.AuthService.ServicesTests
             var response = await _userService.RegisterAsync(registerDto);
 
             // Assert
-            Assert.IsFalse(response.IsSucceed);
+            Assert.That(response.IsSucceed, Is.False);
             Assert.That(response.Message, Is.EqualTo($"User with username {userByName.UserName} already exists!"));
 
             _mockUserManager.Verify(
@@ -200,7 +200,7 @@ namespace DK.AuthService.ServicesTests
             var response = await _userService.RegisterAsync(registerDto);
 
             // Assert
-            Assert.IsFalse(response.IsSucceed);
+            Assert.That(response.IsSucceed, Is.False);
             Assert.That(response.Message, Is.EqualTo($"User with email {userByEmail.Email} already exists!"));
 
             _mockUserManager.Verify(
@@ -234,7 +234,7 @@ namespace DK.AuthService.ServicesTests
             var response = await _userService.UpdateUserInfoAsync(currentUserName, updatedUserInfo);
 
             // Assert
-            Assert.IsTrue(response.IsSucceed);
+            Assert.That(response.IsSucceed, Is.True);
             Assert.That(response.Message, Is.EqualTo("User updated successfully!"));
             _mockUserManager.Verify(
                 u => u.UpdateAsync(userWithWantedUsername), Times.Once);
@@ -265,7 +265,7 @@ namespace DK.AuthService.ServicesTests
             var response = await _userService.UpdateUserInfoAsync(currentUserName, updatedUserInfo);
 
             // Assert
-            Assert.IsFalse(response.IsSucceed);
+            Assert.That(response.IsSucceed, Is.False);
             Assert.That(response.Message, Is.EqualTo($"Username {userWithWantedUsername.UserName} is already taken!"));
 
             _mockUserManager.Verify(
@@ -295,7 +295,7 @@ namespace DK.AuthService.ServicesTests
             var response = await _userService.ChangeUserPassword(currentUserName, changeUserPasswordDto);
 
             // Assert
-            Assert.IsTrue(response.IsSucceed);
+            Assert.That(response.IsSucceed, Is.True);
             Assert.That(response.Message, Is.EqualTo("Password was successfully changed!"));
 
             _mockUserManager.Verify(
