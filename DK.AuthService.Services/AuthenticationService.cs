@@ -28,35 +28,29 @@ namespace DK.AuthService.Services
 
         public void Dispose() { }
 
-        public async Task<ServiceResponseDto> LoginAsync(LoginRequestDto loginDto)
+        public async Task<LoginResponseDto> LoginAsync(LoginRequestDto loginDto)
         {
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            var user = await _userManager.FindByNameAsync(loginDto.Username);
 
             if (user is null)
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = $"User with email {loginDto.Email} doesnt exist!"
-                };
+                throw new ArgumentException($"User with username {loginDto.Username} doesn't exist!");
 
             var isPasswordCorrect = await _userManager.CheckPasswordAsync(user, loginDto.Password);
 
             if (!isPasswordCorrect)
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = "Password is incorrect!"
-                };
+                throw new ArgumentException("Password is incorrect!");
 
             var userRoles = await _userManager.GetRolesAsync(user);
 
             var authClaims = new List<Claim>
             {
+                new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim("JWTID", Guid.NewGuid().ToString()),
                 new Claim("FirstName", user.FirstName),
                 new Claim("LastName", user.LastName),
+                new Claim(ClaimTypes.Email, user.Email),
             };
 
             foreach (var userRole in userRoles)
@@ -66,50 +60,49 @@ namespace DK.AuthService.Services
 
             var token = GenerateNewJsonWebToken(authClaims);
 
-            return new ServiceResponseDto()
+            return new LoginResponseDto()
             {
-                IsSucceed = true,
-                Message = token
+                AuthenticationToken = token,
+                Username = user.UserName,
+                IsAdmin = await _userManager.IsInRoleAsync(user, "Admin")
             };
         }
 
-        public async Task<ServiceResponseDto> GetExternalTokenAsync(string? userName)
+        public async Task<bool> RegisterAsync(RegisterRequestDto registerDto)
         {
-            if (!await _userService.IsCurrentUserNameValid(userName))
-            {
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = "Access denied"
-                };
-            }
+            var userByEmail = await _userManager.FindByEmailAsync(registerDto.Email);
+            var userByName = await _userManager.FindByNameAsync(registerDto.UserName);
 
-            var user = await _userManager.FindByNameAsync(userName);
-            var userRoles = await _userManager.GetRolesAsync(user);
+            if (userByEmail != null)
+                throw new ArgumentException($"User with email {registerDto.Email} already exists!");
 
-            var authClaims = new List<Claim>
+            if (userByName != null)
+                throw new ArgumentException($"User with username {userByName.UserName} already exists!");
+            
+            ApplicationUser newUser = new ApplicationUser()
             {
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim("JWTID", Guid.NewGuid().ToString()),
-                new Claim("FirstName", user.FirstName),
-                new Claim("LastName", user.LastName),
+                FirstName = registerDto.FirstName,
+                LastName = registerDto.LastName,
+                Email = registerDto.Email,
+                UserName = registerDto.UserName,
+                SecurityStamp = Guid.NewGuid().ToString(),
             };
 
-            foreach (var userRole in userRoles)
+            var createUserResult = await _userManager.CreateAsync(newUser, registerDto.Password);
+
+            if (!createUserResult.Succeeded)
             {
-                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                var errorString = string.Empty;
+                foreach (var error in createUserResult.Errors)
+                    errorString += " # " + error.Description;
+                
+                throw new ArgumentException(errorString);
             }
 
-            var token = GenerateNewJsonWebToken(authClaims);
+            await _userManager.AddToRoleAsync(newUser, PredefinedUserRoles.USER);
 
-            return new ServiceResponseDto()
-            {
-                IsSucceed = true,
-                Message = token
-            };
+            return true;
         }
-
 
         private string GenerateNewJsonWebToken(List<Claim> claims)
         {

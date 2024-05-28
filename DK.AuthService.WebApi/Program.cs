@@ -71,6 +71,7 @@ namespace DK.AuthService.WebApi
                 options.Password.RequireUppercase = false;
                 options.Password.RequireNonAlphanumeric = false;
                 options.SignIn.RequireConfirmedEmail = false;
+                options.User.RequireUniqueEmail = true;
             });
 
             builder.Services
@@ -94,6 +95,17 @@ namespace DK.AuthService.WebApi
                     };
                 });
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(
+                    policy =>
+                    {
+                        policy.AllowAnyOrigin()
+                              .AllowAnyHeader()
+                              .AllowAnyMethod();
+                    });
+            });
+
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
             builder.Services.AddScoped<IUserService, UserService>();
 
@@ -109,6 +121,7 @@ namespace DK.AuthService.WebApi
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
+            app.UseCors();
 
             app.SeedDefaultRolesAndUsers();
 

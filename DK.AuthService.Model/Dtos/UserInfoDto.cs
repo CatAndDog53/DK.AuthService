@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace DK.AuthService.Model.Dtos
+﻿namespace DK.AuthService.Model.Dtos
 {
     public class UserInfoDto
     {

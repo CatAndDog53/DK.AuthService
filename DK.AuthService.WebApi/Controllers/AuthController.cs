@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using DK.AuthService.Services.Interfaces;
 using DK.AuthService.Model.Dtos;
-using DK.AuthService.Model;
-using Microsoft.AspNetCore.Authorization;
 
 namespace DK.AuthService.WebApi.Controllers
 {
@@ -21,26 +19,33 @@ namespace DK.AuthService.WebApi.Controllers
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto loginDto)
         {
-            var loginResult = await _authService.LoginAsync(loginDto);
+            LoginResponseDto loginResponseDto;
+            try
+            {
+                loginResponseDto = await _authService.LoginAsync(loginDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
-            if (loginResult.IsSucceed)
-                return Ok(loginResult);
-
-            return Unauthorized(loginResult);
+            return Ok(loginResponseDto);
         }
-        
+
         [HttpPost]
-        [Route("externalLogin")]
-        [Authorize(Roles = PredefinedUserRoles.USER)]
-        public async Task<IActionResult> ExternalLogin()
+        [Route("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequestDto registerDto)
         {
-            var externalToken = await _authService.GetExternalTokenAsync(User.Identity?.Name);
+            try
+            {
+                await _authService.RegisterAsync(registerDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
-            if (externalToken.IsSucceed)
-                return Ok(externalToken);
-
-            return Unauthorized(externalToken);
+            return Ok("Registration successfull!");
         }
-
     }
 }

@@ -16,14 +16,11 @@ namespace DK.AuthService.Services
             _roleManager = roleManager;
         }
 
-        public async Task<UserInfoDto> GetCurrentUserInfo(string? currentUserName)
+        public async Task<UserInfoDto> GetUserInfo(string? username)
         {
-            if (!await IsCurrentUserNameValid(currentUserName))
-            {
-                return new UserInfoDto();
-            }
-
-            var currentUser = await _userManager.FindByNameAsync(currentUserName);
+            var currentUser = await _userManager.FindByNameAsync(username);
+            if (currentUser == null)
+                throw new Exception("User not found!");
 
             return new UserInfoDto
             {
@@ -43,169 +40,59 @@ namespace DK.AuthService.Services
                 Email = user.Email 
             }).ToList();
         }
-
-        public async Task<ServiceResponseDto> RegisterAsync(RegisterRequestDto registerDto)
+                
+        public async Task<bool> AddToRoleAsync(string? username, string? roleName)
         {
-            var userByEmail = await _userManager.FindByEmailAsync(registerDto.Email);
-            var userByName = await _userManager.FindByNameAsync(registerDto.UserName);
-
-            if (userByEmail != null)
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = $"User with email {userByEmail.Email} already exists!"
-                };
-
-            if (userByName != null)
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = $"User with username {userByName.UserName} already exists!"
-                };
-
-
-            ApplicationUser newUser = new ApplicationUser()
-            {
-                FirstName = registerDto.FirstName,
-                LastName = registerDto.LastName,
-                Email = registerDto.Email,
-                UserName = registerDto.UserName,
-                SecurityStamp = Guid.NewGuid().ToString(),
-            };
-
-            var createUserResult = await _userManager.CreateAsync(newUser, registerDto.Password);
-
-            if (!createUserResult.Succeeded)
-            {
-                var errorString = "User creation failed beacause: ";
-                foreach (var error in createUserResult.Errors)
-                {
-                    errorString += " # " + error.Description;
-                }
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = errorString
-                };
-            }
-
-            await _userManager.AddToRoleAsync(newUser, PredefinedUserRoles.USER);
-
-            return new ServiceResponseDto()
-            {
-                IsSucceed = true,
-                Message = "User created successfully!"
-            };
+            return await UpdateRoleAsync(username, roleName, true);
         }
 
-        public async Task<ServiceResponseDto> UpdateRole(UpdateRoleRequestDto updateRoleRequestDto)
+        public async Task<bool> RemoveFromRoleAsync(string? username, string? roleName)
         {
-            var user = await _userManager.FindByEmailAsync(updateRoleRequestDto.Email);
-
-            if (user is null)
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = "Invalid Email!"
-                };
-
-            if (!await _roleManager.RoleExistsAsync(updateRoleRequestDto.RequestedRole))
-            {
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = $"Requested Role doesn't exist!"
-                };
-            }
-
-            if (await _userManager.IsInRoleAsync(user, updateRoleRequestDto.RequestedRole))
-            {
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = $"User already has requested role!"
-                };
-            }          
-
-            var result = await _userManager.AddToRoleAsync(user, updateRoleRequestDto.RequestedRole);
-                        
-            if (result.Succeeded)
-            {
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = true,
-                    Message = $"Role {updateRoleRequestDto.RequestedRole} was assigned to user with email {updateRoleRequestDto.Email}"
-                };
-            }
-            else
-            {
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = "Unspecified error occured!"
-                };
-            }
+            return await UpdateRoleAsync(username, roleName, false);
         }
 
-        public async Task<ServiceResponseDto> UpdateUserInfoAsync(string? currentUserName, UpdateUserInfoDto updatedUserInfo)
+        public async Task<bool> UpdateUserInfoAsync(string? currentUserName, UpdateUserInfoDto updatedUserInfo)
         {
-            var userWithWantedUsername = await _userManager.FindByNameAsync(updatedUserInfo.UserName);
-            if (userWithWantedUsername != null)
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = $"Username {userWithWantedUsername.UserName} is already taken!"
-                };
-
-            if (!await IsCurrentUserNameValid(currentUserName))
-            {
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = "Access denied"
-                };
-            }
-
             var userWithCurrentUsername = await _userManager.FindByNameAsync(currentUserName);
+            if (userWithCurrentUsername == null)
+                throw new Exception("User not found!");
 
-            userWithCurrentUsername.FirstName = updatedUserInfo.FirstName;
-            userWithCurrentUsername.LastName = updatedUserInfo.LastName;
-            userWithCurrentUsername.UserName = updatedUserInfo.UserName;
+            if (!String.IsNullOrEmpty(updatedUserInfo.UserName))
+            {
+                var userWithWantedUsername = await _userManager.FindByNameAsync(updatedUserInfo.UserName);
+                if (userWithWantedUsername != null)
+                    throw new ArgumentException($"Username {userWithWantedUsername.UserName} is already taken!");
+            }
+
+            if (!String.IsNullOrEmpty(updatedUserInfo.Email))
+            {
+                var userWithWantedEmail = await _userManager.FindByEmailAsync(updatedUserInfo.Email);
+                if (userWithWantedEmail != null)
+                    throw new ArgumentException($"Email {userWithWantedEmail.Email} is already taken!");
+            }
+                                             
+
+            if (!String.IsNullOrEmpty(updatedUserInfo.FirstName)) userWithCurrentUsername.FirstName = updatedUserInfo.FirstName;
+            if (!String.IsNullOrEmpty(updatedUserInfo.LastName)) userWithCurrentUsername.LastName = updatedUserInfo.LastName;
+            if (!String.IsNullOrEmpty(updatedUserInfo.UserName)) userWithCurrentUsername.UserName = updatedUserInfo.UserName;
+            if (!String.IsNullOrEmpty(updatedUserInfo.Email)) userWithCurrentUsername.Email = updatedUserInfo.Email;
 
             var updateUserResult = await _userManager.UpdateAsync(userWithCurrentUsername);
 
             if (!updateUserResult.Succeeded)
             {
-                var errorString = "User update failed beacause: ";
+                var errorString = string.Empty;
                 foreach (var error in updateUserResult.Errors)
-                {
                     errorString += " # " + error.Description;
-                }
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = errorString
-                };
+                
+                throw new Exception(errorString);
             }
 
-            return new ServiceResponseDto()
-            {
-                IsSucceed = true,
-                Message = "User updated successfully!"
-            };
+            return true;
         }
 
-        public async Task<ServiceResponseDto> ChangeUserPassword(string? currentUserName, ChangeUserPasswordDto changeUserPasswordDto)
+        public async Task<bool> ChangeUserPassword(string? currentUserName, ChangeUserPasswordDto changeUserPasswordDto)
         {
-            if (!await IsCurrentUserNameValid(currentUserName))
-            {
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = "Access denied"
-                };
-            }
-
             var userWithCurrentUsername = await _userManager.FindByNameAsync(currentUserName);
 
             var passwordChangeResult = await _userManager.ChangePasswordAsync(
@@ -215,38 +102,42 @@ namespace DK.AuthService.Services
 
             if (!passwordChangeResult.Succeeded)
             {
-                var errorString = "Password change failed beacause: ";
+                var errorString = string.Empty;
                 foreach (var error in passwordChangeResult.Errors)
-                {
                     errorString += " # " + error.Description;
-                }
-                return new ServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    Message = errorString
-                };
+
+                throw new Exception(errorString);
             }
 
-            return new ServiceResponseDto()
-            {
-                IsSucceed = true,
-                Message = "Password was successfully changed!"
-            };
+            return true;
         }
 
-        public async Task<bool> IsCurrentUserNameValid(string? currentUserName)
+        private async Task<bool> UpdateRoleAsync(string? username, string? roleName, bool addRole)
         {
-            if (currentUserName == null)
-            {
-                return false;
-            }
+            var user = await _userManager.FindByNameAsync(username);
 
-            var userWithCurrentUsername = await _userManager.FindByNameAsync(currentUserName);
-            if (userWithCurrentUsername == null)
-            {
+            if (user is null)
+                throw new ArgumentException($"User {username} doesn't exist!");
+
+            if (!await _roleManager.RoleExistsAsync(roleName))
+                throw new ArgumentException("Requested role doesn't exist!");
+
+            if (await _userManager.IsInRoleAsync(user, roleName) && addRole)
+                throw new ArgumentException("User already has requested role!");
+
+            if (!await _userManager.IsInRoleAsync(user, roleName) && !addRole)
+                throw new ArgumentException("User already isn't in requested role!");
+
+            IdentityResult result;
+            if (addRole)
+                result = await _userManager.AddToRoleAsync(user, roleName);
+            else
+                result = await _userManager.RemoveFromRoleAsync(user, roleName);
+
+            if (result.Succeeded)
+                return true;
+            else
                 return false;
-            }
-            return true;
         }
     }
 }

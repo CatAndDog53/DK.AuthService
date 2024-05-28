@@ -3,34 +3,41 @@ using DK.AuthService.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DK.AuthService.Services.Interfaces;
+using DK.AuthService.WebApi.AuthorizationAttributes;
 
 namespace DK.AuthService.WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/")]
     [ApiController]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IAuthenticationService _authService;
 
-        public UserController(IUserService userService, IAuthenticationService authService)
+        public UserController(IUserService userService)
         {
             _userService = userService;
-            _authService = authService;
         }
 
         [HttpGet]
-        [Route("getCurrentUserInfo")]
-        [Authorize(Roles = PredefinedUserRoles.USER)]
-        public async Task<IActionResult> GetCurrentUserInfo()
-        {
-            var userInfo = await _userService.GetCurrentUserInfo(User.Identity?.Name);
+        [Route("user/{username}")]
+        [ResourceOwnerOrAdmin]
+        public async Task<IActionResult> GetUserInfo(string? username)
+        {            
+            UserInfoDto userInfo;
+            try
+            {
+                userInfo = await _userService.GetUserInfo(username);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             return Ok(userInfo);
         }
 
         [HttpGet]
-        [Route("getAllUsersInfo")]
+        [Route("users")]
         [Authorize(Roles = PredefinedUserRoles.ADMIN)]
         public async Task<IActionResult> GetAllUsersInfo()
         {
@@ -40,54 +47,71 @@ namespace DK.AuthService.WebApi.Controllers
         }
 
         [HttpPost]
-        [Route("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequestDto registerDto)
+        [Route("user/{username}/update")]
+        [ResourceOwnerOrAdmin]
+        public async Task<IActionResult> UpdateUserInfo(string? username, [FromBody] UpdateUserInfoDto updateUserInfoDto)
         {
-            var registerResult = await _userService.RegisterAsync(registerDto);
+            try
+            {
+                await _userService.UpdateUserInfoAsync(username, updateUserInfoDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
-            if (registerResult.IsSucceed)
-                return Ok(registerResult);
-
-            return BadRequest(registerResult);
+            return Ok("User info updated successfully!");
         }
 
         [HttpPost]
-        [Route("updateUserInfo")]
-        [Authorize(Roles = PredefinedUserRoles.USER)]
-        public async Task<IActionResult> UpdateCurrentUserInfo([FromBody] UpdateUserInfoDto updateUserInfoDto)
+        [Route("user/{username}/changePassword")]
+        [ResourceOwnerOrAdmin]
+        public async Task<IActionResult> ChangeUserPassword(string? username, [FromBody] ChangeUserPasswordDto changeUserPasswordDto)
         {
-            var updateResult = await _userService.UpdateUserInfoAsync(User.Identity?.Name, updateUserInfoDto);
+            try
+            {
+                await _userService.ChangeUserPassword(username, changeUserPasswordDto);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
-            if (updateResult.IsSucceed)
-                return Ok(updateResult);
-
-            return BadRequest(updateResult);
+            return Ok("Password changed successfully!");
         }
 
         [HttpPost]
-        [Route("changeUserPassword")]
-        [Authorize(Roles = PredefinedUserRoles.USER)]
-        public async Task<IActionResult> ChangeCurrentUserPassword([FromBody] ChangeUserPasswordDto changeUserPasswordDto)
-        {
-            var passwordChangeResult = await _userService.ChangeUserPassword(User.Identity?.Name, changeUserPasswordDto);
-
-            if (passwordChangeResult.IsSucceed)
-                return Ok(passwordChangeResult);
-
-            return BadRequest(passwordChangeResult);
-        }
-
-        [HttpPost]
-        [Route("updateUserRole")]
+        [Route("user/{username}/addToRole")]
         [Authorize(Roles = PredefinedUserRoles.ADMIN)]
-        public async Task<IActionResult> UpdateUserRole([FromBody] UpdateRoleRequestDto updatePermissionDto)
+        public async Task<IActionResult> AddToRole(string? username, string roleName)
         {
-            var operationResult = await _userService.UpdateRole(updatePermissionDto);
+            try
+            {
+                await _userService.AddToRoleAsync(username, roleName);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
-            if (operationResult.IsSucceed)
-                return Ok(operationResult);
+            return Ok("User role updated successfully!");
+        }
 
-            return BadRequest(operationResult);
+        [HttpPost]
+        [Route("user/{username}/removeFromRole")]
+        [Authorize(Roles = PredefinedUserRoles.ADMIN)]
+        public async Task<IActionResult> RemoveFromRole(string? username, string roleName)
+        {
+            try
+            {
+                await _userService.RemoveFromRoleAsync(username, roleName);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            return Ok("User role updated successfully!");
         }
     }
 }

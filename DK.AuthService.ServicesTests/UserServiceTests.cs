@@ -130,7 +130,7 @@ namespace DK.AuthService.ServicesTests
                 .ReturnsAsync(IdentityResult.Success);
 
             // Act
-            var response = await _userService.RegisterAsync(registerDto);
+            var response = await _authService.RegisterAsync(registerDto);
 
             // Assert
             Assert.That(response.IsSucceed, Is.True);
