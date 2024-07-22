@@ -20,20 +20,48 @@ Change them after the first launch.
 ## Log in to this service using Swagger
 - To get a **token for authorization,** use the Login method (the user must exist in the system. Or you should create a new user).
 - Then in Swagger click "Authorize" button and paste token in format:
-
     
         bearer [your token]
-    
 
 ## Api Endpoints
 - ### Auth
-  - **Login()**. Issues a Bearer token to valid users. This token can be used to authorize in this AuthService.
-  - **ExternalLogin()**. Works only for authorized users. Issues a Bearer token for authorization in other applications that use this AuthService as authentication server.
- 
+  - **POST /api/auth/login**: Authenticates a user and returns a JWT token.
+    - **Input**: `username`, `password`
+    - **Output**: `JWT token`, `username`
+    - **Access**: For all users
+
+  - **POST /api/auth/register**: Registers a new user with default USER role.
+    - **Input**: `firstName`, `lastName`, `username`, `email`, `password`
+    - **Output**: -
+    - **Access**: For all users
+
 - ### User
-  - **GetCurrentUserInfo()**. Works only for authorized users. Returns information about the current user.
-  - **GetAllUsersInfo()**. Works only for ADMINs. Returns information about all registered users.
-  - **Register()**. Authorization is not required, works for everyone. Registers a new user with defaul USER role.
-  - **UpdateCurrentUserInfo()**. Works only for authorized users. Updates current user information.
-  - **ChangeCurrentUserPassword()**. Works only for authorized users. Changes current user information.
-  - **AddAdminRoleToUser()**. Works only for ADMINs. Makes given user an Admin.
+  - **GET /api/users**: Retrieves information about all users.
+    - **Input**: -
+    - **Output**: `List of users`
+    - **Access**: Only for administrators
+
+  - **GET /api/user/{username}**: Retrieves information about a specific user.
+    - **Input**: -
+    - **Output**: `Requested user's data`
+    - **Access**: Only for the requested user and administrators
+
+  - **POST /api/user/{username}/update**: Updates the information of the current user.
+    - **Input**: New `firstName`, `lastName`, `username`
+    - **Output**: -
+    - **Access**: Only for the target user and administrators
+
+  - **POST /api/user/{username}/changePassword**: Changes the password of the current user.
+    - **Input**: New `password`, old `password`
+    - **Output**: -
+    - **Access**: Only for the target user and administrators
+
+  - **POST /api/user/{username}/addToRole**: Adds the user to a specified role.
+    - **Input**: `Role name`
+    - **Output**: -
+    - **Access**: Only for administrators
+
+  - **POST /api/user/{username}/removeFromRole**: Removes the user from a specified role.
+    - **Input**: `Role name`
+    - **Output**: -
+    - **Access**: Only for administrators
